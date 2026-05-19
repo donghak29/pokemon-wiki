@@ -281,7 +281,7 @@ function PokemonDefenseTab() {
   var [searchLoading, setSearchLoading] = useState(false);
   var [initialLoading, setInitialLoading] = useState(true);
   var [loadingMore, setLoadingMore] = useState(false);
-  var [hasMore, setHasMore] = useState(true);
+  var [, setHasMore] = useState(true);
   var [selected, setSelected] = useState(null);
   var [koProgress, setKoProgress] = useState(0);
 

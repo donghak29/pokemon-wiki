@@ -30,10 +30,10 @@ const CHART = {
   bug:      { fire:0.5, grass:2, fighting:0.5, poison:0.5, flying:0.5, psychic:2, ghost:0.5, dark:2, steel:0.5, fairy:0.5 },
   rock:     { fire:2, ice:2, fighting:0.5, ground:0.5, flying:2, bug:2, steel:0.5 },
   ghost:    { normal:0, fighting:0, psychic:2, ghost:2, dark:0.5 },
-  dragon:   { dragon:2, steel:0.5, fairy:2 },
+  dragon:   { dragon:2, steel:0.5, fairy:0 },
   dark:     { fighting:0.5, psychic:2, ghost:2, dark:0.5, fairy:0.5 },
   steel:    { fire:0.5, water:0.5, electric:0.5, ice:2, rock:2, steel:0.5, fairy:2 },
-  fairy:    { fire:0.5, fighting:2, poison:0.5, dragon:0, dark:2, steel:0.5 }
+  fairy:    { fire:0.5, fighting:2, poison:0.5, dragon:2, dark:2, steel:0.5 }
 };
 
 function getMultiplier(attackType, defType) {

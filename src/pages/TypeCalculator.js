@@ -120,7 +120,7 @@ function StartScreen({ quizType, onStart }) {
 // ── 결과 화면 ──
 function ResultScreen({ score, total, onRestart, onHome }) {
   var pct = Math.round((score / total) * 100);
-  var grade = pct === 100 ? "퍼펙트! 🏆" : pct >= 80 ? "훌륭해요! 🥇" : pct >= 60 ? "잘했어요! 🥈" : pct >= 40 ? "분발하세요! 🥉" : "포켓몬 박사의 길은 멀어요... 💪";
+  var grade = pct === 100 ? "포켓몬 박사로 인정합니다! 🏆" : pct >= 80 ? "훌륭해요! 🥇" : pct >= 60 ? "아쉬워요! 🥈" : pct >= 40 ? "분발하세요! 🥉" : "포켓몬 박사의 길은 멀어요... 💪";
 
   return (
     <div className="result-screen pixel-card">

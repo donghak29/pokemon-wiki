@@ -171,15 +171,25 @@ function DefenseQuiz({ total, onFinish }) {
       if (!pkm) { attempts++; continue; }
       var typeNames = pkm.types.map(function(t) { return t.type.name; });
       matchup = getDefenseMatchup(typeNames);
-      var available = [4, 2, 0.5, 0.25, 0].filter(function(m) {
-        return Object.values(matchup).some(function(v) { return v === m; });
-      });
+      var multKeys = [4, 2, 0.5, 0.25, 0];
+      var available = [];
+      for (var mi = 0; mi < multKeys.length; mi++) {
+        var mv = multKeys[mi];
+        var vals = Object.values(matchup);
+        for (var vi = 0; vi < vals.length; vi++) {
+          if (vals[vi] === mv) { available.push(mv); break; }
+        }
+      }
       var candidateMult = available[Math.floor(Math.random() * available.length)];
       var key = pkm.id + "-" + candidateMult;
       if (!usedRef.current.has(key)) {
         usedRef.current.add(key);
         targetMult = candidateMult;
-        answers = Object.keys(matchup).filter(function(t) { return matchup[t] === targetMult; });
+        var matchupKeys = Object.keys(matchup);
+        answers = [];
+        for (var ki = 0; ki < matchupKeys.length; ki++) {
+          if (matchup[matchupKeys[ki]] === targetMult) answers.push(matchupKeys[ki]);
+        }
         break;
       }
       attempts++;

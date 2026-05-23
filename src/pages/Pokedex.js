@@ -268,6 +268,176 @@ function PokemonModal({ pokemon, onClose }) {
   );
 }
 
+
+const CHART = {
+  normal:   { rock:0.5, ghost:0, steel:0.5 },
+  fire:     { fire:0.5, water:0.5, grass:2, ice:2, bug:2, rock:0.5, dragon:0.5, steel:2 },
+  water:    { fire:2, water:0.5, grass:0.5, ground:2, rock:2, dragon:0.5 },
+  electric: { water:2, electric:0.5, grass:0.5, ground:0, flying:2, dragon:0.5 },
+  grass:    { fire:0.5, water:2, grass:0.5, poison:0.5, ground:2, flying:0.5, bug:0.5, rock:2, dragon:0.5, steel:0.5 },
+  ice:      { fire:0.5, water:0.5, grass:2, ice:0.5, ground:2, flying:2, dragon:2, steel:0.5 },
+  fighting: { normal:2, ice:2, poison:0.5, flying:0.5, psychic:0.5, bug:0.5, rock:2, ghost:0, dark:2, steel:2, fairy:0.5 },
+  poison:   { grass:2, poison:0.5, ground:0.5, rock:0.5, ghost:0.5, steel:0, fairy:2 },
+  ground:   { fire:2, electric:2, grass:0.5, poison:2, flying:0, bug:0.5, rock:2, steel:2 },
+  flying:   { electric:0.5, grass:2, fighting:2, bug:2, rock:0.5, steel:0.5 },
+  psychic:  { fighting:2, poison:2, psychic:0.5, dark:0, steel:0.5 },
+  bug:      { fire:0.5, grass:2, fighting:0.5, poison:0.5, flying:0.5, psychic:2, ghost:0.5, dark:2, steel:0.5, fairy:0.5 },
+  rock:     { fire:2, ice:2, fighting:0.5, ground:0.5, flying:2, bug:2, steel:0.5 },
+  ghost:    { normal:0, fighting:0, psychic:2, ghost:2, dark:0.5 },
+  dragon:   { dragon:2, steel:0.5, fairy:0 },
+  dark:     { fighting:0.5, psychic:2, ghost:2, dark:0.5, fairy:0.5 },
+  steel:    { fire:0.5, water:0.5, electric:0.5, ice:2, rock:2, steel:0.5, fairy:2 },
+  fairy:    { fire:0.5, fighting:2, poison:0.5, dragon:2, dark:2, steel:0.5 }
+};
+
+const ALL_TYPES = ["normal","fire","water","electric","grass","ice","fighting","poison","ground","flying","psychic","bug","rock","ghost","dragon","dark","steel","fairy"];
+
+function getDefMatchup(types) {
+  var result = {};
+  ALL_TYPES.forEach(function(atk) {
+    var mult = 1;
+    types.forEach(function(def) {
+      mult *= (CHART[atk] && CHART[atk][def] !== undefined) ? CHART[atk][def] : 1;
+    });
+    result[atk] = mult;
+  });
+  return result;
+}
+
+const STAT_KO_CMP = { hp:"HP", attack:"공격", defense:"방어", "special-attack":"특공", "special-defense":"특방", speed:"스피드" };
+const STAT_COLOR_CMP = { hp:"#ff5959", attack:"#ff7c44", defense:"#ffa544", "special-attack":"#6cb4ff", "special-defense":"#7cff9e", speed:"#ff6cb4" };
+
+function CompareStatRow({ name, valA, valB }) {
+  var max = Math.max(valA, valB, 255);
+  var pctA = (valA / max) * 100;
+  var pctB = (valB / max) * 100;
+  var color = STAT_COLOR_CMP[name] || "#888";
+  var aWins = valA > valB;
+  var bWins = valB > valA;
+  return (
+    <div className="cmp-stat-row">
+      <span className="cmp-stat-name">{STAT_KO_CMP[name] || name}</span>
+      <div className="cmp-stat-bars">
+        <div className="cmp-bar-wrap cmp-bar-left">
+          <span className={"cmp-val" + (aWins ? " cmp-win" : "")}>{valA}</span>
+          <div className="cmp-bar-bg">
+            <div className="cmp-bar-fill" style={{ width: pctA + "%", background: color, opacity: aWins ? 1 : 0.45 }} />
+          </div>
+        </div>
+        <span className="cmp-stat-label">{STAT_KO_CMP[name] || name}</span>
+        <div className="cmp-bar-wrap cmp-bar-right">
+          <div className="cmp-bar-bg">
+            <div className="cmp-bar-fill cmp-bar-fill-right" style={{ width: pctB + "%", background: color, opacity: bWins ? 1 : 0.45 }} />
+          </div>
+          <span className={"cmp-val" + (bWins ? " cmp-win" : "")}>{valB}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CompareAbilities({ pokemon }) {
+  var [abilities, setAbilities] = useState([]);
+  useEffect(function() {
+    Promise.all(pokemon.abilities.map(async function(a) {
+      var info = await fetchAbilityKo(a.ability.name);
+      return { nameKo: info.nameKo, isHidden: a.is_hidden };
+    })).then(setAbilities);
+  }, [pokemon]);
+  return (
+    <div className="cmp-abilities">
+      {abilities.map(function(a, i) {
+        return (
+          <span key={i} className={"cmp-ability-badge" + (a.isHidden ? " hidden" : "")}>
+            {a.nameKo}{a.isHidden ? " *" : ""}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+function CompareModal({ pokemonA, pokemonB, onClose, onExit }) {
+  var imgA = (pokemonA.sprites && pokemonA.sprites.other && pokemonA.sprites.other["official-artwork"] && pokemonA.sprites.other["official-artwork"].front_default) || (pokemonA.sprites && pokemonA.sprites.front_default);
+  var imgB = (pokemonB.sprites && pokemonB.sprites.other && pokemonB.sprites.other["official-artwork"] && pokemonB.sprites.other["official-artwork"].front_default) || (pokemonB.sprites && pokemonB.sprites.front_default);
+  var matchupA = getDefMatchup(pokemonA.types.map(function(t) { return t.type.name; }));
+  var matchupB = getDefMatchup(pokemonB.types.map(function(t) { return t.type.name; }));
+
+  var totalA = pokemonA.stats.reduce(function(s, x) { return s + x.base_stat; }, 0);
+  var totalB = pokemonB.stats.reduce(function(s, x) { return s + x.base_stat; }, 0);
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal cmp-modal" onClick={function(e) { e.stopPropagation(); }}>
+        <button className="modal-close" onClick={onClose}>X</button>
+
+        {/* 포켓몬 헤더 */}
+        <div className="cmp-header">
+          <div className="cmp-pokemon-info">
+            <img src={imgA} alt={pokemonA.nameKo} className="cmp-img" />
+            <p className="cmp-name">{pokemonA.nameKo}</p>
+            <div className="cmp-types">
+              {pokemonA.types.map(function(t) { return <span key={t.type.name} className={"type-badge type-" + t.type.name}>{TYPE_KO[t.type.name]}</span>; })}
+            </div>
+          </div>
+          <div className="cmp-vs">VS</div>
+          <div className="cmp-pokemon-info">
+            <img src={imgB} alt={pokemonB.nameKo} className="cmp-img" />
+            <p className="cmp-name">{pokemonB.nameKo}</p>
+            <div className="cmp-types">
+              {pokemonB.types.map(function(t) { return <span key={t.type.name} className={"type-badge type-" + t.type.name}>{TYPE_KO[t.type.name]}</span>; })}
+            </div>
+          </div>
+        </div>
+
+        {/* 특성 */}
+        <div className="cmp-section">
+          <p className="cmp-section-title">특성</p>
+          <div className="cmp-row-2col">
+            <CompareAbilities pokemon={pokemonA} />
+            <CompareAbilities pokemon={pokemonB} />
+          </div>
+        </div>
+
+        {/* 능력치 비교 */}
+        <div className="cmp-section">
+          <p className="cmp-section-title">기본 능력치</p>
+          {pokemonA.stats.map(function(s) {
+            var sB = pokemonB.stats.find(function(x) { return x.stat.name === s.stat.name; });
+            return <CompareStatRow key={s.stat.name} name={s.stat.name} valA={s.base_stat} valB={sB ? sB.base_stat : 0} />;
+          })}
+          <div className="cmp-total-row">
+            <span className={"cmp-total" + (totalA > totalB ? " cmp-win" : "")}>합계 {totalA}</span>
+            <span className="cmp-total-label">총합</span>
+            <span className={"cmp-total" + (totalB > totalA ? " cmp-win" : "")}>합계 {totalB}</span>
+          </div>
+        </div>
+
+        {/* 타입 상성 비교 */}
+        <div className="cmp-section">
+          <p className="cmp-section-title">방어 타입 상성</p>
+          <div className="cmp-matchup-grid">
+            {ALL_TYPES.map(function(atk) {
+              var vA = matchupA[atk];
+              var vB = matchupB[atk];
+              if (vA === 1 && vB === 1) return null;
+              return (
+                <div key={atk} className="cmp-matchup-row">
+                  <span className={"type-badge type-" + atk} style={{ fontSize: "7px", minWidth: "44px", textAlign: "center" }}>{TYPE_KO[atk]}</span>
+                  <span className={"cmp-mult" + (vA > vB ? " cmp-worse" : vA < vB ? " cmp-better" : "")}>{vA}x</span>
+                  <span className={"cmp-mult" + (vB > vA ? " cmp-worse" : vB < vA ? " cmp-better" : "")}>{vB}x</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <button className="pixel-btn" style={{ width: "100%", marginTop: "8px" }} onClick={onExit}>비교 종료</button>
+      </div>
+    </div>
+  );
+}
+
 function PokemonCard({ pokemon, onClick }) {
   var imgSrc = (pokemon.sprites && pokemon.sprites.other && pokemon.sprites.other["official-artwork"] && pokemon.sprites.other["official-artwork"].front_default) || (pokemon.sprites && pokemon.sprites.front_default);
   return (
@@ -520,6 +690,28 @@ export default function Pokedex() {
 
   var displayList = isSearching ? searchResults : loadedPokemon;
 
+  // 비교 모드
+  var [compareMode, setCompareMode] = useState(false);
+  var [compareList, setCompareList] = useState([]);
+  var [showCompare, setShowCompare] = useState(false);
+
+  function handleCardClick(pokemon) {
+    if (compareMode) {
+      if (compareList.find(function(p) { return p.id === pokemon.id; })) return;
+      var next = compareList.concat(pokemon);
+      setCompareList(next);
+      if (next.length === 2) setShowCompare(true);
+    } else {
+      setSelected(pokemon);
+    }
+  }
+
+  function exitCompare() {
+    setCompareMode(false);
+    setCompareList([]);
+    setShowCompare(false);
+  }
+
   return (
     <div>
       <h1 className="page-title">POKEMON <span>POKEDEX</span></h1>
@@ -535,6 +727,42 @@ export default function Pokedex() {
           </span>
         </div>
       )}
+
+      <div className="compare-toolbar">
+        {!compareMode ? (
+          <button className="pixel-btn compare-btn" onClick={function() { setCompareMode(true); setCompareList([]); }}>
+            ⚔ 비교 모드
+          </button>
+        ) : (
+          <div className="compare-active">
+            <span className="compare-status">
+              {compareList.length === 0 && "포켓몬을 2마리 선택하세요"}
+              {compareList.length === 1 && (
+                <span>{compareList[0].nameKo} 선택됨 — 1마리 더 선택하세요</span>
+              )}
+              {compareList.length === 2 && "비교 준비 완료!"}
+            </span>
+            <div className="compare-selected">
+              {compareList.map(function(p) {
+                var img = (p.sprites && p.sprites.other && p.sprites.other["official-artwork"] && p.sprites.other["official-artwork"].front_default) || (p.sprites && p.sprites.front_default);
+                return (
+                  <div key={p.id} className="compare-chip">
+                    <img src={img} alt={p.nameKo} className="compare-chip-img" />
+                    <span className="compare-chip-name">{p.nameKo}</span>
+                    <span className="compare-chip-remove" onClick={function() { setCompareList(compareList.filter(function(x) { return x.id !== p.id; })); }}>✕</span>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ display: "flex", gap: "8px" }}>
+              {compareList.length === 2 && (
+                <button className="pixel-btn" onClick={function() { setShowCompare(true); }}>비교하기</button>
+              )}
+              <button className="pixel-btn" style={{ borderColor: "var(--text-muted)", color: "var(--text-muted)" }} onClick={exitCompare}>취소</button>
+            </div>
+          </div>
+        )}
+      </div>
 
       <div className="search-wrap" ref={searchWrapRef}>
         <span className="search-icon">🔍</span>
@@ -590,7 +818,17 @@ export default function Pokedex() {
             <div className="loading"><div className="loading-ball" /><p>검색 중...</p></div>
           ) : (
             <div className="poke-grid">
-              {displayList.map(function(p) { return <PokemonCard key={p.id} pokemon={p} onClick={setSelected} />; })}
+              {displayList.map(function(p) {
+                var isSelected = compareList.find(function(x) { return x.id === p.id; });
+                return (
+                  <div key={p.id} style={{ position: "relative" }}>
+                    {compareMode && isSelected && (
+                      <div className="compare-overlay">✓</div>
+                    )}
+                    <PokemonCard pokemon={p} onClick={handleCardClick} />
+                  </div>
+                );
+              })}
             </div>
           )}
           {!isSearching && loadingMore && (
@@ -605,6 +843,14 @@ export default function Pokedex() {
       )}
 
       {selected && <PokemonModal pokemon={selected} onClose={function() { setSelected(null); }} />}
+      {showCompare && compareList.length === 2 && (
+        <CompareModal
+          pokemonA={compareList[0]}
+          pokemonB={compareList[1]}
+          onClose={function() { setShowCompare(false); }}
+          onExit={exitCompare}
+        />
+      )}
     </div>
   );
 }

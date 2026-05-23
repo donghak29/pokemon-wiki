@@ -1524,3 +1524,296 @@ body {
   color: var(--text-muted);
   line-height: 1.6;
 }
+
+/* ── COMPARE MODE ── */
+.compare-toolbar {
+  margin-bottom: 16px;
+}
+
+.compare-btn {
+  border-color: var(--yellow);
+  color: var(--yellow);
+}
+
+.compare-btn:hover {
+  background: var(--yellow);
+  color: #000;
+  box-shadow: 0 0 12px var(--yellow);
+}
+
+.compare-active {
+  background: var(--bg-card);
+  border: 1px solid var(--yellow);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.compare-status {
+  font-family: var(--pixel-font);
+  font-size: 8px;
+  color: var(--yellow);
+  letter-spacing: 1px;
+}
+
+.compare-selected {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.compare-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--radius);
+  padding: 4px 10px 4px 4px;
+}
+
+.compare-chip-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.compare-chip-name {
+  font-family: var(--pixel-font);
+  font-size: 7px;
+  color: var(--text-primary);
+}
+
+.compare-chip-remove {
+  font-size: 10px;
+  color: var(--text-muted);
+  cursor: pointer;
+  margin-left: 4px;
+}
+
+.compare-chip-remove:hover { color: var(--accent); }
+
+.compare-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 209, 102, 0.25);
+  border: 2px solid var(--yellow);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: var(--yellow);
+  z-index: 2;
+  pointer-events: none;
+  border-radius: 4px;
+}
+
+/* ── COMPARE MODAL ── */
+.cmp-modal {
+  max-width: 640px;
+}
+
+.cmp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cmp-pokemon-info {
+  flex: 1;
+  text-align: center;
+}
+
+.cmp-img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+}
+
+.cmp-name {
+  font-family: var(--pixel-font);
+  font-size: 10px;
+  color: var(--text-primary);
+  margin: 8px 0 6px;
+  letter-spacing: 1px;
+}
+
+.cmp-types {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.cmp-vs {
+  font-family: var(--pixel-font);
+  font-size: 14px;
+  color: var(--accent);
+  text-shadow: 0 0 10px var(--accent);
+}
+
+.cmp-section {
+  margin-bottom: 24px;
+}
+
+.cmp-section-title {
+  font-family: var(--pixel-font);
+  font-size: 8px;
+  color: var(--text-muted);
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cmp-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.cmp-abilities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cmp-ability-badge {
+  font-family: var(--pixel-font);
+  font-size: 7px;
+  padding: 4px 8px;
+  border: 1px solid var(--blue);
+  color: var(--blue);
+  border-radius: var(--radius);
+}
+
+.cmp-ability-badge.hidden {
+  border-color: var(--purple);
+  color: var(--purple);
+}
+
+/* 능력치 바 */
+.cmp-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.cmp-stat-name {
+  display: none;
+}
+
+.cmp-stat-bars {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cmp-bar-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cmp-bar-left {
+  flex-direction: row-reverse;
+}
+
+.cmp-bar-right {
+  flex-direction: row;
+}
+
+.cmp-stat-label {
+  font-family: var(--pixel-font);
+  font-size: 6px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  width: 36px;
+  text-align: center;
+}
+
+.cmp-bar-bg {
+  flex: 1;
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.cmp-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.cmp-bar-fill-right {
+  margin-left: auto;
+}
+
+.cmp-val {
+  font-family: var(--pixel-font);
+  font-size: 8px;
+  color: var(--text-secondary);
+  min-width: 24px;
+  text-align: center;
+}
+
+.cmp-win {
+  color: var(--yellow) !important;
+}
+
+.cmp-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.cmp-total {
+  font-family: var(--pixel-font);
+  font-size: 9px;
+  color: var(--text-secondary);
+}
+
+.cmp-total-label {
+  font-family: var(--pixel-font);
+  font-size: 7px;
+  color: var(--text-muted);
+}
+
+/* 타입 상성 비교 */
+.cmp-matchup-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cmp-matchup-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cmp-mult {
+  font-family: var(--pixel-font);
+  font-size: 9px;
+  color: var(--text-secondary);
+  min-width: 32px;
+  text-align: center;
+}
+
+.cmp-worse { color: #ef5350 !important; }
+.cmp-better { color: #66bb6a !important; }

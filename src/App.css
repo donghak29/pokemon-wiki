@@ -1246,3 +1246,9 @@ body {
   color: var(--accent);
   background: var(--accent-glow);
 }
+
+.quiz-correct-locked {
+  outline: 2px solid var(--yellow) !important;
+  box-shadow: 0 0 8px var(--yellow);
+  opacity: 1 !important;
+}

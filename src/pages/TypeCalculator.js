@@ -209,9 +209,9 @@ function DefenseQuiz({ total, onFinish }) {
 
   // 다시 도전하기 - 맞은 타입 유지, 틀린 타입만 제거
   function handleRetry() {
-    setSelected(function(prev) {
-      return prev.filter(function(t) { return question.answers.includes(t); });
-    });
+    // 맞은 타입만 남기고 나머지 제거
+    var correctOnes = selected.filter(function(t) { return question.answers.includes(t); });
+    setSelected(correctOnes);
     setSubmitted(false);
     setIsCorrect(false);
   }
@@ -266,22 +266,22 @@ function DefenseQuiz({ total, onFinish }) {
             var isSel = selected.includes(type);
             var isAns = question.answers.includes(type);
             var isWrong = submitted && isSel && !isAns;
-            var isCorrectSelected = submitted && isSel && isAns; // 맞은 타입
-            var isShowCorrect = submitted && showAnswer && isAns && !isSel; // 정답 보기 시 안 고른 정답
+            var isCorrectSelected = isSel && isAns; // 맞은 타입 (제출 전후 모두)
+            var isShowCorrect = submitted && showAnswer && isAns && !isSel;
+            var isLocked = isCorrectSelected; // 맞은 타입은 클릭 불가
             return (
               <span
                 key={type}
                 className={
                   "type-badge type-" + type +
-                  (isSel && !submitted ? " quiz-selected" : "") +
+                  (isSel && !isCorrectSelected && !submitted ? " quiz-selected" : "") +
                   (isWrong ? " quiz-wrong" : "") +
-                  (isCorrectSelected ? " quiz-correct" : "") +
+                  (isCorrectSelected ? " quiz-correct-locked" : "") +
                   (isShowCorrect ? " quiz-correct" : "")
                 }
-                style={{ cursor: (submitted && !isWrong) ? "default" : "pointer", fontSize: "9px", padding: "6px 10px" }}
+                style={{ cursor: isLocked ? "default" : "pointer", fontSize: "9px", padding: "6px 10px" }}
                 onClick={function() {
-                  // 제출 후엔 틀린 타입만 토글 가능
-                  if (submitted && !isWrong) return;
+                  if (isLocked) return; // 맞은 타입은 클릭 불가
                   toggleType(type);
                 }}
               >

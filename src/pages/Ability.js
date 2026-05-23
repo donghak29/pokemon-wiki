@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useLocation } from "react-router-dom";
 
 var ABILITY_CACHE = {};
 
@@ -108,6 +109,7 @@ function AbilityCard({ ability, defaultOpen }) {
 const PAGE_SIZE = 30;
 
 export default function Ability() {
+  var location = useLocation();
   var [allList, setAllList] = useState([]);
   var [displayed, setDisplayed] = useState([]);
   var [koMap, setKoMap] = useState({});
@@ -127,6 +129,16 @@ export default function Ability() {
   var allListRef = useRef([]);
   var koMapRef = useRef({});
   var searchWrapRef = useRef(null);
+
+  // URL 파라미터에서 검색어 읽기
+  useEffect(function() {
+    var params = new URLSearchParams(location.search);
+    var q = params.get("search");
+    if (q) {
+      setSearch(q);
+      window.scrollTo({ top: 0 });
+    }
+  }, [location.search]);
 
   // 전체 특성 목록 + 한글 이름 캐싱
   useEffect(function() {

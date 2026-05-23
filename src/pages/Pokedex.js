@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 const TYPE_KO = {
   normal: "노말", fire: "불꽃", water: "물", electric: "전기",
@@ -88,6 +89,127 @@ function MegaPanel({ baseName }) {
   );
 }
 
+// 특성 한글 설명 가져오기
+async function fetchAbilityKo(abilityName) {
+  try {
+    var res = await fetch("https://pokeapi.co/api/v2/ability/" + abilityName);
+    var data = await res.json();
+    var nameKoObj = data.names.find(function(n) { return n.language.name === "ko"; });
+    var descKoObj = data.flavor_text_entries.find(function(f) { return f.language.name === "ko"; });
+    return {
+      nameKo: nameKoObj ? nameKoObj.name : abilityName,
+      desc: descKoObj ? descKoObj.flavor_text.replace(/\n|\f/g, " ") : ""
+    };
+  } catch(e) { return { nameKo: abilityName, desc: "" }; }
+}
+
+function AbilityTooltip({ name, desc, isHidden }) {
+  var [show, setShow] = useState(false);
+  return (
+    <span className="ability-wrap">
+      <span
+        className={"ability-name" + (isHidden ? " ability-hidden" : "")}
+        onMouseEnter={function() { setShow(true); }}
+        onMouseLeave={function() { setShow(false); }}
+      >
+        {name}{isHidden ? " *" : ""}
+      </span>
+      {show && desc && (
+        <span className="ability-tooltip">{desc}</span>
+      )}
+    </span>
+  );
+}
+
+function AbilityTab({ pokemon }) {
+  var [abilities, setAbilities] = useState([]);
+  var [loading, setLoading] = useState(true);
+
+  useEffect(function() {
+    async function load() {
+      setLoading(true);
+      var results = await Promise.all(pokemon.abilities.map(async function(a) {
+        var info = await fetchAbilityKo(a.ability.name);
+        return { nameKo: info.nameKo, desc: info.desc, isHidden: a.is_hidden };
+      }));
+      setAbilities(results);
+      setLoading(false);
+    }
+    load();
+  }, [pokemon]);
+
+  if (loading) return <div className="loading" style={{ padding: "24px 0" }}><div className="loading-ball" /><p>특성 불러오는 중...</p></div>;
+
+  return (
+    <div className="ability-tab">
+      <p className="stats-title">특성 목록</p>
+      {abilities.map(function(a, i) {
+        return (
+          <div key={i} className={"ability-card" + (a.isHidden ? " ability-card-hidden" : "")}>
+            <div className="ability-card-header">
+              <span className="ability-card-name">{a.nameKo}{a.isHidden ? " *" : ""}</span>
+              {a.isHidden && <span className="ability-hidden-badge">숨겨진 특성</span>}
+            </div>
+            <p className="ability-card-desc">{a.desc || "설명 없음"}</p>
+          </div>
+        );
+      })}
+      <p className="ability-hint">* 숨겨진 특성</p>
+    </div>
+  );
+}
+
+function BasicTab({ pokemon, onClose }) {
+  var [abilities, setAbilities] = useState([]);
+  var [loading, setLoading] = useState(true);
+  var navigate = useNavigate();
+
+  useEffect(function() {
+    async function load() {
+      setLoading(true);
+      var results = await Promise.all(pokemon.abilities.map(async function(a) {
+        var info = await fetchAbilityKo(a.ability.name);
+        return { nameKo: info.nameKo, desc: info.desc, isHidden: a.is_hidden, enName: a.ability.name };
+      }));
+      setAbilities(results);
+      setLoading(false);
+    }
+    load();
+  }, [pokemon]);
+
+  function handleAbilityClick(abilityName) {
+    onClose();
+    navigate("/ability?search=" + encodeURIComponent(abilityName));
+  }
+
+  return (
+    <div className="modal-stats">
+      <p className="stats-title">특성</p>
+      {loading ? (
+        <p style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "16px" }}>불러오는 중...</p>
+      ) : (
+        <div className="ability-inline-list">
+          {abilities.map(function(a, i) {
+            return (
+              <div key={i} className="ability-inline-item" onClick={function() { handleAbilityClick(a.nameKo); }}>
+                <div className="ability-inline-header">
+                  <span className={"ability-inline-name" + (a.isHidden ? " ability-hidden" : "")}>
+                    {a.nameKo}{a.isHidden ? " *" : ""}
+                  </span>
+                  <span className="ability-inline-go">특성 도감 →</span>
+                </div>
+                {a.desc && <p className="ability-inline-desc">{a.desc.length > 60 ? a.desc.slice(0, 60) + "..." : a.desc}</p>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+      <p className="stats-title" style={{ marginTop: "16px" }}>기본 능력치</p>
+      {pokemon.stats.map(function(s) { return <StatBar key={s.stat.name} name={s.stat.name} value={s.base_stat} />; })}
+    </div>
+  );
+}
+
 function PokemonModal({ pokemon, onClose }) {
   var [tab, setTab] = useState("basic");
   if (!pokemon) return null;
@@ -112,9 +234,11 @@ function PokemonModal({ pokemon, onClose }) {
         </div>
         <div className="modal-tabs">
           <button className={"modal-tab" + (tab === "basic" ? " active" : "")} onClick={function() { setTab("basic"); }}>기본 정보</button>
+          <button className={"modal-tab" + (tab === "ability" ? " active" : "")} onClick={function() { setTab("ability"); }}>특성</button>
           <button className={"modal-tab" + (tab === "mega" ? " active" : "")} onClick={function() { setTab("mega"); }}>⚡ 메가 진화</button>
         </div>
-        {tab === "basic" && <div className="modal-stats"><p className="stats-title">기본 능력치</p>{pokemon.stats.map(function(s) { return <StatBar key={s.stat.name} name={s.stat.name} value={s.base_stat} />; })}</div>}
+        {tab === "basic" && <BasicTab pokemon={pokemon} onClose={onClose} />}
+        {tab === "ability" && <AbilityTab pokemon={pokemon} />}
         {tab === "mega" && <MegaPanel baseName={pokemon.name} />}
       </div>
     </div>
@@ -394,7 +518,7 @@ export default function Pokedex() {
         <input
           className="search-input"
           type="text"
-          placeholder="예) 피, 피카츄, pikachu, 25"
+          placeholder="예) 이상, 피카츄, pikachu, 25"
           value={search}
           onChange={function(e) { setSearch(e.target.value); setShowSuggestions(true); }}
           onFocus={function() { if (suggestions.length > 0) setShowSuggestions(true); }}

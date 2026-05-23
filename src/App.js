@@ -18,14 +18,14 @@ function App() {
             <NavLink to="/" end className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
               도감
             </NavLink>
+            <NavLink to="/ability" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+              특성 도감
+            </NavLink>
             <NavLink to="/type-chart" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
               타입 상성표
             </NavLink>
             <NavLink to="/type-calculator" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
               상성 계산기
-            </NavLink>
-            <NavLink to="/ability" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
-              특성 도감
             </NavLink>
           </nav>
         </header>

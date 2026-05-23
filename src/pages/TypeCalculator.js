@@ -151,6 +151,7 @@ function DefenseQuiz({ total, onFinish }) {
   var [score, setScore] = useState(0);
   var [qNum, setQNum] = useState(1);
   var [showAnswer, setShowAnswer] = useState(false);
+  var usedRef = useRef(new Set()); // 중복 방지용
 
   var loadQuestion = useCallback(async function() {
     setLoading(true);
@@ -158,15 +159,32 @@ function DefenseQuiz({ total, onFinish }) {
     setSubmitted(false);
     setIsCorrect(false);
     setShowAnswer(false);
+
     var pkm = null;
-    while (!pkm) { pkm = await fetchRandomPokemon(); }
-    var typeNames = pkm.types.map(function(t) { return t.type.name; });
-    var matchup = getDefenseMatchup(typeNames);
-    var available = [4, 2, 0.5, 0.25, 0].filter(function(m) {
-      return Object.values(matchup).some(function(v) { return v === m; });
-    });
-    var targetMult = available[Math.floor(Math.random() * available.length)];
-    var answers = Object.keys(matchup).filter(function(t) { return matchup[t] === targetMult; });
+    var targetMult = null;
+    var answers = null;
+    var matchup = null;
+    var attempts = 0;
+
+    while (attempts < 50) {
+      pkm = await fetchRandomPokemon();
+      if (!pkm) { attempts++; continue; }
+      var typeNames = pkm.types.map(function(t) { return t.type.name; });
+      matchup = getDefenseMatchup(typeNames);
+      var available = [4, 2, 0.5, 0.25, 0].filter(function(m) {
+        return Object.values(matchup).some(function(v) { return v === m; });
+      });
+      var candidateMult = available[Math.floor(Math.random() * available.length)];
+      var key = pkm.id + "-" + candidateMult;
+      if (!usedRef.current.has(key)) {
+        usedRef.current.add(key);
+        targetMult = candidateMult;
+        answers = Object.keys(matchup).filter(function(t) { return matchup[t] === targetMult; });
+        break;
+      }
+      attempts++;
+    }
+
     setPokemon(pkm);
     setQuestion({ matchup: matchup, targetMult: targetMult, answers: answers });
     setLoading(false);
@@ -189,19 +207,18 @@ function DefenseQuiz({ total, onFinish }) {
     if (correct) setScore(function(s) { return s + 1; });
   }
 
-  function handleNext() {
-    if (qNum >= total) {
-      onFinish(score + (isCorrect ? 0 : 0));
-    } else {
-      setQNum(function(n) { return n + 1; });
-      loadQuestion();
-    }
+  // 다시 도전하기 - 맞은 타입 유지, 틀린 타입만 제거
+  function handleRetry() {
+    setSelected(function(prev) {
+      return prev.filter(function(t) { return question.answers.includes(t); });
+    });
+    setSubmitted(false);
+    setIsCorrect(false);
   }
 
-  function handleNextAfterCorrect() {
-    var newScore = score;
+  function handleNext() {
     if (qNum >= total) {
-      onFinish(newScore);
+      onFinish(score);
     } else {
       setQNum(function(n) { return n + 1; });
       loadQuestion();
@@ -249,13 +266,24 @@ function DefenseQuiz({ total, onFinish }) {
             var isSel = selected.includes(type);
             var isAns = question.answers.includes(type);
             var isWrong = submitted && isSel && !isAns;
-            var isCorrectType = submitted && showAnswer && isAns;
+            var isCorrectSelected = submitted && isSel && isAns; // 맞은 타입
+            var isShowCorrect = submitted && showAnswer && isAns && !isSel; // 정답 보기 시 안 고른 정답
             return (
               <span
                 key={type}
-                className={"type-badge type-" + type + (isSel && !submitted ? " quiz-selected" : "") + (isWrong ? " quiz-wrong" : "") + (isCorrectType ? " quiz-correct" : "")}
-                style={{ cursor: submitted ? "default" : "pointer", fontSize: "9px", padding: "6px 10px" }}
-                onClick={function() { toggleType(type); }}
+                className={
+                  "type-badge type-" + type +
+                  (isSel && !submitted ? " quiz-selected" : "") +
+                  (isWrong ? " quiz-wrong" : "") +
+                  (isCorrectSelected ? " quiz-correct" : "") +
+                  (isShowCorrect ? " quiz-correct" : "")
+                }
+                style={{ cursor: (submitted && !isWrong) ? "default" : "pointer", fontSize: "9px", padding: "6px 10px" }}
+                onClick={function() {
+                  // 제출 후엔 틀린 타입만 토글 가능
+                  if (submitted && !isWrong) return;
+                  toggleType(type);
+                }}
               >
                 {TYPE_KO[type]}
               </span>
@@ -270,7 +298,7 @@ function DefenseQuiz({ total, onFinish }) {
         {submitted && isCorrect && (
           <div className="quiz-result">
             <p className="quiz-result-text result-correct">🎉 정답!</p>
-            <button className="pixel-btn" onClick={handleNextAfterCorrect} style={{ marginTop: "12px" }}>
+            <button className="pixel-btn" onClick={handleNext} style={{ marginTop: "12px" }}>
               {qNum >= total ? "결과 보기" : "다음 문제"}
             </button>
           </div>
@@ -281,7 +309,7 @@ function DefenseQuiz({ total, onFinish }) {
             <p className="quiz-result-text result-wrong">❌ 다시 한번 도전해보세요!</p>
             {!showAnswer ? (
               <div className="retry-btns">
-                <button className="pixel-btn" onClick={function() { setSubmitted(false); setSelected([]); }}>다시 도전하기</button>
+                <button className="pixel-btn" onClick={handleRetry}>다시 도전하기</button>
                 <button className="pixel-btn" style={{ borderColor: "var(--text-muted)", color: "var(--text-muted)" }} onClick={function() { setShowAnswer(true); }}>정답 보기</button>
               </div>
             ) : (

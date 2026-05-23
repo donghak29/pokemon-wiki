@@ -87,13 +87,10 @@ async function fetchItemDetail(name) {
     var nameKoObj = data.names.find(function(n) { return n.language.name === "ko"; });
     var descKoObj = data.flavor_text_entries.find(function(f) { return f.language.name === "ko"; });
 
-    // 한글 이름이 없으면 null 반환 (걸러냄)
-    if (!nameKoObj) return null;
-
     var result = {
       name: data.name,
-      nameKo: nameKoObj.name,
-      desc: descKoObj ? descKoObj.flavor_text.replace(/\n|\f/g, " ") : "",
+      nameKo: nameKoObj ? nameKoObj.name : data.name,
+      desc: descKoObj ? descKoObj.flavor_text.replace(/\n|\f/g, " ") : (data.flavor_text_entries.find(function(f) { return f.language.name === "en"; }) ? data.flavor_text_entries.find(function(f) { return f.language.name === "en"; }).flavor_text.replace(/\n|\f/g, " ") : ""),
       sprite: data.sprites && data.sprites.default ? data.sprites.default : null,
     };
     ITEM_CACHE[name] = result;
@@ -113,9 +110,7 @@ function ItemCard({ itemName }) {
     });
   }, [itemName]);
 
-  // 한글 데이터 없으면 렌더링 안함
-  if (loaded && !detail) return null;
-  if (!loaded) return null;
+  if (!loaded || !detail) return null;
 
   return (
     <div className={"item-card pixel-card" + (open ? " open" : "")} onClick={function() { setOpen(function(v) { return !v; }); }}>
@@ -191,9 +186,7 @@ export default function Item() {
     var ko = (koMapRef.current[name] || "").toLowerCase();
     var matchSearch = !q || ko.includes(q) || name.includes(q);
     var matchCat = categoryFilter === "전체" || (CATEGORY_MAP[categoryFilter] && CATEGORY_MAP[categoryFilter].includes(name));
-    // 한글 이름 없는 건 제외
-    var hasKo = !!koMapRef.current[name];
-    return matchSearch && matchCat && (hasKo || !loadingDone);
+    return matchSearch && matchCat;
   });
 
   var categories = ["전체"].concat(Object.keys(CATEGORY_MAP));

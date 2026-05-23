@@ -103,24 +103,6 @@ async function fetchAbilityKo(abilityName) {
   } catch(e) { return { nameKo: abilityName, desc: "" }; }
 }
 
-function AbilityTooltip({ name, desc, isHidden }) {
-  var [show, setShow] = useState(false);
-  return (
-    <span className="ability-wrap">
-      <span
-        className={"ability-name" + (isHidden ? " ability-hidden" : "")}
-        onMouseEnter={function() { setShow(true); }}
-        onMouseLeave={function() { setShow(false); }}
-      >
-        {name}{isHidden ? " *" : ""}
-      </span>
-      {show && desc && (
-        <span className="ability-tooltip">{desc}</span>
-      )}
-    </span>
-  );
-}
-
 function AbilityTab({ pokemon }) {
   var [abilities, setAbilities] = useState([]);
   var [loading, setLoading] = useState(true);

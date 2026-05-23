@@ -1,30 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 
-// 전투용 아이템 카테고리 (PokéAPI 카테고리명 기준)
-const BATTLE_CATEGORIES = [
-  "choice",           // 구애 시리즈
-  "held-items",       // 지니는 도구
-  "bad-held-items",   // 상태이상 도구
-  "type-enhancement", // 타입 강화
-  "stat-boosts",      // 능력치 강화
-  "effort-training",  // 기타 전투
-  "vitamins",
-  "berries",          // 나무 열매 (전체)
-  "berry-pockets",
-  "jewels",
-  "mega-stones",
-  "z-crystals",
-  "plates",
-  "drives",
-  "memories",
-  "species-specific", // 종족 전용
-  "training",
-  "in-a-pinch",       // 위기 발동 열매
-  "picky-healing",    // 전투 회복
-  "other",
-  "all-machines",
-];
-
 // 전투에서 쓰이는 아이템만 화이트리스트로 관리
 const ITEM_WHITELIST = [
   // 구애 시리즈
@@ -177,7 +152,7 @@ function ItemCard({ itemName }) {
 export default function Item() {
   var [search, setSearch] = useState("");
   var [categoryFilter, setCategoryFilter] = useState("전체");
-  var [allItems, setAllItems] = useState([]);
+  var [, setAllItems] = useState([]);
   var [koMap, setKoMap] = useState({});
   var [suggestions, setSuggestions] = useState([]);
   var [showSuggestions, setShowSuggestions] = useState(false);

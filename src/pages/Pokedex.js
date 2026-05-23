@@ -196,7 +196,7 @@ function BasicTab({ pokemon, onClose }) {
                   <span className={"ability-inline-name" + (a.isHidden ? " ability-hidden" : "")}>
                     {a.nameKo}{a.isHidden ? " *" : ""}
                   </span>
-                  <span className="ability-inline-go">특성 도감 →</span>
+                  <span className="ability-inline-go">특성 →</span>
                 </div>
                 {a.desc && <p className="ability-inline-desc">{a.desc.length > 60 ? a.desc.slice(0, 60) + "..." : a.desc}</p>}
               </div>
@@ -518,7 +518,7 @@ export default function Pokedex() {
         <input
           className="search-input"
           type="text"
-          placeholder="예) 이상, 피카츄, pikachu, 25"
+          placeholder="예) 피카츄, pikachu, 25"
           value={search}
           onChange={function(e) { setSearch(e.target.value); setShowSuggestions(true); }}
           onFocus={function() { if (suggestions.length > 0) setShowSuggestions(true); }}

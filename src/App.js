@@ -19,7 +19,7 @@ function App() {
               도감
             </NavLink>
             <NavLink to="/ability" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
-              특성 도감
+              특성
             </NavLink>
             <NavLink to="/type-chart" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
               타입 상성표

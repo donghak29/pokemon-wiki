@@ -384,13 +384,18 @@ function CompareSide({ base, label }) {
   var megas = useMegaForms(base.name);
   var [selected, setSelected] = useState("base");
 
-  var current = selected === "base" ? base : (megas.find(function(m) { return m.label === selected; }) || { data: base }).data;
+  var currentMega = megas.find(function(m) { return m.label === selected; });
   var isBase = selected === "base";
-  var currentPokemon = isBase ? base : current;
+  var currentPokemon = isBase ? base : (currentMega ? currentMega.data : base);
+
+  // 한글 이름: 기본 이름 + 메가 라벨 조합
+  var displayName = isBase
+    ? (base.nameKo || base.name)
+    : (base.nameKo || base.name) + " (" + selected + ")";
 
   var imgSrc = (currentPokemon.sprites && currentPokemon.sprites.other && currentPokemon.sprites.other["official-artwork"] && currentPokemon.sprites.other["official-artwork"].front_default) || (currentPokemon.sprites && currentPokemon.sprites.front_default);
 
-  return { pokemon: currentPokemon, imgSrc: imgSrc, megas: megas, selected: selected, setSelected: setSelected, label: label };
+  return { pokemon: currentPokemon, imgSrc: imgSrc, megas: megas, selected: selected, setSelected: setSelected, label: label, displayName: displayName };
 }
 
 function CompareModal({ pokemonA, pokemonB, onClose, onExit }) {
@@ -434,8 +439,8 @@ function CompareModal({ pokemonA, pokemonB, onClose, onExit }) {
         {/* 포켓몬 헤더 */}
         <div className="cmp-header">
           <div className="cmp-pokemon-info">
-            <img src={sideA.imgSrc} alt={pA.nameKo || pA.name} className="cmp-img" />
-            <p className="cmp-name">{pA.nameKo || pA.name}</p>
+            <img src={sideA.imgSrc} alt={sideA.displayName} className="cmp-img" />
+            <p className="cmp-name">{sideA.displayName}</p>
             <div className="cmp-types">
               {pA.types.map(function(t) { return <span key={t.type.name} className={"type-badge type-" + t.type.name}>{TYPE_KO[t.type.name]}</span>; })}
             </div>
@@ -443,8 +448,8 @@ function CompareModal({ pokemonA, pokemonB, onClose, onExit }) {
           </div>
           <div className="cmp-vs">VS</div>
           <div className="cmp-pokemon-info">
-            <img src={sideB.imgSrc} alt={pB.nameKo || pB.name} className="cmp-img" />
-            <p className="cmp-name">{pB.nameKo || pB.name}</p>
+            <img src={sideB.imgSrc} alt={sideB.displayName} className="cmp-img" />
+            <p className="cmp-name">{sideB.displayName}</p>
             <div className="cmp-types">
               {pB.types.map(function(t) { return <span key={t.type.name} className={"type-badge type-" + t.type.name}>{TYPE_KO[t.type.name]}</span>; })}
             </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 const TYPE_KO = {
   normal: "노말", fire: "불꽃", water: "물", electric: "전기",

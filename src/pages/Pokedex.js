@@ -394,7 +394,7 @@ export default function Pokedex() {
         <input
           className="search-input"
           type="text"
-          placeholder="예) 이상, 피카츄, pikachu, 25"
+          placeholder="예) 피, 피카츄, pikachu, 25"
           value={search}
           onChange={function(e) { setSearch(e.target.value); setShowSuggestions(true); }}
           onFocus={function() { if (suggestions.length > 0) setShowSuggestions(true); }}

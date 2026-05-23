@@ -357,14 +357,74 @@ function CompareAbilities({ pokemon }) {
   );
 }
 
-function CompareModal({ pokemonA, pokemonB, onClose, onExit }) {
-  var imgA = (pokemonA.sprites && pokemonA.sprites.other && pokemonA.sprites.other["official-artwork"] && pokemonA.sprites.other["official-artwork"].front_default) || (pokemonA.sprites && pokemonA.sprites.front_default);
-  var imgB = (pokemonB.sprites && pokemonB.sprites.other && pokemonB.sprites.other["official-artwork"] && pokemonB.sprites.other["official-artwork"].front_default) || (pokemonB.sprites && pokemonB.sprites.front_default);
-  var matchupA = getDefMatchup(pokemonA.types.map(function(t) { return t.type.name; }));
-  var matchupB = getDefMatchup(pokemonB.types.map(function(t) { return t.type.name; }));
+function useMegaForms(baseName) {
+  var [megas, setMegas] = useState([]);
+  useEffect(function() {
+    async function fetch_megas() {
+      var variants = [baseName + "-mega", baseName + "-mega-x", baseName + "-mega-y"];
+      var results = [];
+      for (var i = 0; i < variants.length; i++) {
+        try {
+          var res = await fetch("https://pokeapi.co/api/v2/pokemon/" + variants[i]);
+          if (res.ok) {
+            var data = await res.json();
+            var label = variants[i].includes("-mega-x") ? "메가X" : variants[i].includes("-mega-y") ? "메가Y" : "메가";
+            results.push({ label: label, data: data });
+          }
+        } catch(e) {}
+      }
+      setMegas(results);
+    }
+    fetch_megas();
+  }, [baseName]);
+  return megas;
+}
 
-  var totalA = pokemonA.stats.reduce(function(s, x) { return s + x.base_stat; }, 0);
-  var totalB = pokemonB.stats.reduce(function(s, x) { return s + x.base_stat; }, 0);
+function CompareSide({ base, label }) {
+  var megas = useMegaForms(base.name);
+  var [selected, setSelected] = useState("base");
+
+  var current = selected === "base" ? base : (megas.find(function(m) { return m.label === selected; }) || { data: base }).data;
+  var isBase = selected === "base";
+  var currentPokemon = isBase ? base : current;
+
+  var imgSrc = (currentPokemon.sprites && currentPokemon.sprites.other && currentPokemon.sprites.other["official-artwork"] && currentPokemon.sprites.other["official-artwork"].front_default) || (currentPokemon.sprites && currentPokemon.sprites.front_default);
+
+  return { pokemon: currentPokemon, imgSrc: imgSrc, megas: megas, selected: selected, setSelected: setSelected, label: label };
+}
+
+function CompareModal({ pokemonA, pokemonB, onClose, onExit }) {
+  var sideA = CompareSide({ base: pokemonA, label: "A" });
+  var sideB = CompareSide({ base: pokemonB, label: "B" });
+
+  var pA = sideA.pokemon;
+  var pB = sideB.pokemon;
+
+  var matchupA = getDefMatchup(pA.types.map(function(t) { return t.type.name; }));
+  var matchupB = getDefMatchup(pB.types.map(function(t) { return t.type.name; }));
+  var totalA = pA.stats.reduce(function(s, x) { return s + x.base_stat; }, 0);
+  var totalB = pB.stats.reduce(function(s, x) { return s + x.base_stat; }, 0);
+
+  function MegaToggle({ side }) {
+    if (side.megas.length === 0) return null;
+    var options = [{ label: "기본" }].concat(side.megas.map(function(m) { return { label: m.label }; }));
+    return (
+      <div className="cmp-mega-toggle">
+        {options.map(function(opt) {
+          var val = opt.label === "기본" ? "base" : opt.label;
+          return (
+            <button
+              key={val}
+              className={"cmp-mega-btn" + (side.selected === val ? " active" : "")}
+              onClick={function() { side.setSelected(val); }}
+            >
+              {opt.label}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -374,19 +434,21 @@ function CompareModal({ pokemonA, pokemonB, onClose, onExit }) {
         {/* 포켓몬 헤더 */}
         <div className="cmp-header">
           <div className="cmp-pokemon-info">
-            <img src={imgA} alt={pokemonA.nameKo} className="cmp-img" />
-            <p className="cmp-name">{pokemonA.nameKo}</p>
+            <img src={sideA.imgSrc} alt={pA.nameKo || pA.name} className="cmp-img" />
+            <p className="cmp-name">{pA.nameKo || pA.name}</p>
             <div className="cmp-types">
-              {pokemonA.types.map(function(t) { return <span key={t.type.name} className={"type-badge type-" + t.type.name}>{TYPE_KO[t.type.name]}</span>; })}
+              {pA.types.map(function(t) { return <span key={t.type.name} className={"type-badge type-" + t.type.name}>{TYPE_KO[t.type.name]}</span>; })}
             </div>
+            <MegaToggle side={sideA} />
           </div>
           <div className="cmp-vs">VS</div>
           <div className="cmp-pokemon-info">
-            <img src={imgB} alt={pokemonB.nameKo} className="cmp-img" />
-            <p className="cmp-name">{pokemonB.nameKo}</p>
+            <img src={sideB.imgSrc} alt={pB.nameKo || pB.name} className="cmp-img" />
+            <p className="cmp-name">{pB.nameKo || pB.name}</p>
             <div className="cmp-types">
-              {pokemonB.types.map(function(t) { return <span key={t.type.name} className={"type-badge type-" + t.type.name}>{TYPE_KO[t.type.name]}</span>; })}
+              {pB.types.map(function(t) { return <span key={t.type.name} className={"type-badge type-" + t.type.name}>{TYPE_KO[t.type.name]}</span>; })}
             </div>
+            <MegaToggle side={sideB} />
           </div>
         </div>
 
@@ -394,16 +456,16 @@ function CompareModal({ pokemonA, pokemonB, onClose, onExit }) {
         <div className="cmp-section">
           <p className="cmp-section-title">특성</p>
           <div className="cmp-row-2col">
-            <CompareAbilities pokemon={pokemonA} />
-            <CompareAbilities pokemon={pokemonB} />
+            <CompareAbilities pokemon={pA} />
+            <CompareAbilities pokemon={pB} />
           </div>
         </div>
 
         {/* 능력치 비교 */}
         <div className="cmp-section">
           <p className="cmp-section-title">기본 능력치</p>
-          {pokemonA.stats.map(function(s) {
-            var sB = pokemonB.stats.find(function(x) { return x.stat.name === s.stat.name; });
+          {pA.stats.map(function(s) {
+            var sB = pB.stats.find(function(x) { return x.stat.name === s.stat.name; });
             return <CompareStatRow key={s.stat.name} name={s.stat.name} valA={s.base_stat} valB={sB ? sB.base_stat : 0} />;
           })}
           <div className="cmp-total-row">

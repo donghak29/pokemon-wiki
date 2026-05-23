@@ -1817,3 +1817,36 @@ body {
 
 .cmp-worse { color: #ef5350 !important; }
 .cmp-better { color: #66bb6a !important; }
+
+/* ── MEGA TOGGLE IN COMPARE ── */
+.cmp-mega-toggle {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.cmp-mega-btn {
+  font-family: var(--pixel-font);
+  font-size: 7px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 1px;
+}
+
+.cmp-mega-btn:hover {
+  border-color: var(--yellow);
+  color: var(--yellow);
+}
+
+.cmp-mega-btn.active {
+  border-color: var(--yellow);
+  color: var(--yellow);
+  background: rgba(255, 209, 102, 0.1);
+}

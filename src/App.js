@@ -21,7 +21,7 @@ function App() {
               타입 상성표
             </NavLink>
             <NavLink to="/type-calculator" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
-              상성 계산기
+              포켓몬 퀴즈 
             </NavLink>
           </nav>
         </header>
@@ -35,7 +35,7 @@ function App() {
         </main>
 
         <footer className="footer">
-          <p>Data provided by <a href="https://pokeapi.co" target="_blank" rel="noreferrer">PokéAPI</a></p>
+          <p>Data provided by <a href="https://pokeapi.co" target="_blank" rel="noreferrer">PokéAPI</a> &nbsp;|&nbsp; Made by 탁동학 &nbsp;<a href="https://instagram.com/donghak_t" target="_blank" rel="noreferrer">@donghak_t</a></p>
         </footer>
       </div>
     </BrowserRouter>

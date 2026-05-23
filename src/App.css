@@ -1252,3 +1252,215 @@ body {
   box-shadow: 0 0 8px var(--yellow);
   opacity: 1 !important;
 }
+
+/* ── ABILITY ── */
+.ability-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.ability-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.ability-name {
+  font-family: var(--pixel-font);
+  font-size: 9px;
+  color: var(--blue);
+  cursor: pointer;
+  padding: 4px 10px;
+  border: 1px solid var(--blue);
+  border-radius: var(--radius);
+  background: rgba(6, 214, 255, 0.08);
+  transition: all 0.15s;
+}
+
+.ability-name:hover {
+  background: rgba(6, 214, 255, 0.2);
+}
+
+.ability-hidden {
+  color: var(--purple);
+  border-color: var(--purple);
+  background: rgba(179, 136, 255, 0.08);
+}
+
+.ability-hidden:hover {
+  background: rgba(179, 136, 255, 0.2);
+}
+
+.ability-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  white-space: nowrap;
+  max-width: 260px;
+  white-space: normal;
+  z-index: 10;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  pointer-events: none;
+}
+
+.ability-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--border-bright);
+}
+
+/* 특성 탭 */
+.ability-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ability-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.ability-card-hidden {
+  border-color: var(--purple);
+  background: rgba(179, 136, 255, 0.05);
+}
+
+.ability-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.ability-card-name {
+  font-family: var(--pixel-font);
+  font-size: 9px;
+  color: var(--blue);
+}
+
+.ability-card-hidden .ability-card-name {
+  color: var(--purple);
+}
+
+.ability-hidden-badge {
+  font-family: var(--pixel-font);
+  font-size: 7px;
+  color: var(--purple);
+  border: 1px solid var(--purple);
+  padding: 2px 6px;
+  border-radius: var(--radius);
+}
+
+.ability-card-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.ability-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+/* ── ABILITY LIST PAGE ── */
+.ability-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ability-list-card {
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.ability-list-card.open {
+  border-color: var(--blue);
+}
+
+.ability-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+}
+
+.ability-list-name {
+  font-family: var(--pixel-font);
+  font-size: 9px;
+  color: var(--text-primary);
+  letter-spacing: 1px;
+}
+
+.ability-list-arrow {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.ability-list-body {
+  padding: 0 18px 16px;
+  border-top: 1px solid var(--border);
+}
+
+.ability-list-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-top: 14px;
+  margin-bottom: 16px;
+}
+
+.ability-pokemon-section {
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+
+.ability-pokemon-label {
+  font-family: var(--pixel-font);
+  font-size: 7px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+}
+
+.ability-pokemon-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ability-pokemon-chip {
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 3px 8px;
+}
+
+.chip-hidden {
+  border-color: var(--purple);
+  color: var(--purple);
+}
+
+.chip-star {
+  color: var(--purple);
+}

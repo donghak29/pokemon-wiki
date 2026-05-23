@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
 import Pokedex from "./pages/Pokedex";
 import TypeChart from "./pages/TypeChart";
 import TypeCalculator from "./pages/TypeCalculator";
+import Ability from "./pages/Ability";
 import "./App.css";
 
 function App() {
@@ -21,7 +22,10 @@ function App() {
               타입 상성표
             </NavLink>
             <NavLink to="/type-calculator" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
-              포켓몬 퀴즈 
+              상성 계산기
+            </NavLink>
+            <NavLink to="/ability" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+              특성 도감
             </NavLink>
           </nav>
         </header>
@@ -31,6 +35,7 @@ function App() {
             <Route path="/" element={<Pokedex />} />
             <Route path="/type-chart" element={<TypeChart />} />
             <Route path="/type-calculator" element={<TypeCalculator />} />
+            <Route path="/ability" element={<Ability />} />
           </Routes>
         </main>
 

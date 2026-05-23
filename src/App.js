@@ -3,6 +3,7 @@ import Pokedex from "./pages/Pokedex";
 import TypeChart from "./pages/TypeChart";
 import TypeCalculator from "./pages/TypeCalculator";
 import Ability from "./pages/Ability";
+import Item from "./pages/Item";
 import "./App.css";
 
 function App() {
@@ -21,11 +22,14 @@ function App() {
             <NavLink to="/ability" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
               특성
             </NavLink>
+            <NavLink to="/item" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+              도구
+            </NavLink>
             <NavLink to="/type-chart" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
               타입 상성표
             </NavLink>
             <NavLink to="/type-calculator" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
-              퀴즈 
+              상성 계산기
             </NavLink>
           </nav>
         </header>
@@ -36,6 +40,7 @@ function App() {
             <Route path="/type-chart" element={<TypeChart />} />
             <Route path="/type-calculator" element={<TypeCalculator />} />
             <Route path="/ability" element={<Ability />} />
+            <Route path="/item" element={<Item />} />
           </Routes>
         </main>
 

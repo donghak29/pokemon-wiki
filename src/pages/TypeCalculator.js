@@ -120,7 +120,7 @@ function StartScreen({ quizType, onStart }) {
 // ── 결과 화면 ──
 function ResultScreen({ score, total, onRestart, onHome }) {
   var pct = Math.round((score / total) * 100);
-  var grade = pct === 100 ? "포켓몬 박사로 인정합니다! 🏆" : pct >= 80 ? "훌륭해요! 🥇" : pct >= 60 ? "아쉬워요! 🥈" : pct >= 40 ? "분발하세요! 🥉" : "포켓몬 박사의 길은 멀어요... 💪";
+  var grade = pct === 100 ? "퍼펙트! 🏆" : pct >= 80 ? "훌륭해요! 🥇" : pct >= 60 ? "잘했어요! 🥈" : pct >= 40 ? "분발하세요! 🥉" : "포켓몬 박사의 길은 멀어요... 💪";
 
   return (
     <div className="result-screen pixel-card">
@@ -305,13 +305,15 @@ function DefenseQuiz({ total, onFinish }) {
 function SilhouetteQuiz({ total, onFinish }) {
   var [pokemon, setPokemon] = useState(null);
   var [loading, setLoading] = useState(true);
-  var [hint, setHint] = useState(0); // 0: 실루엣, 1: 모자이크, 2: 원본
+  var [hint, setHint] = useState(0);
   var [input, setInput] = useState("");
   var [submitted, setSubmitted] = useState(false);
   var [isCorrect, setIsCorrect] = useState(false);
   var [showAnswer, setShowAnswer] = useState(false);
+  var [locked, setLocked] = useState(false); // 입력 잠금
   var [score, setScore] = useState(0);
   var [qNum, setQNum] = useState(1);
+  var topRef = useRef(null);
 
   var loadQuestion = useCallback(async function() {
     setLoading(true);
@@ -320,6 +322,7 @@ function SilhouetteQuiz({ total, onFinish }) {
     setSubmitted(false);
     setIsCorrect(false);
     setShowAnswer(false);
+    setLocked(false);
     var pkm = null;
     while (!pkm) { pkm = await fetchRandomPokemon(); }
     setPokemon(pkm);
@@ -329,7 +332,7 @@ function SilhouetteQuiz({ total, onFinish }) {
   useEffect(function() { loadQuestion(); }, [loadQuestion]);
 
   function handleSubmit() {
-    if (!input.trim()) return;
+    if (!input.trim() || locked) return;
     var ans = input.trim().toLowerCase();
     var correct = ans === pokemon.nameKo || ans === pokemon.name.toLowerCase();
     setIsCorrect(correct);
@@ -337,6 +340,9 @@ function SilhouetteQuiz({ total, onFinish }) {
     if (correct) {
       setScore(function(s) { return s + 1; });
       setHint(2);
+    } else {
+      // 틀리면 입력 잠금
+      setLocked(true);
     }
   }
 
@@ -351,6 +357,20 @@ function SilhouetteQuiz({ total, onFinish }) {
       setScore(newScore);
       loadQuestion();
     }
+  }
+
+  // 다시 도전하기 - 입력만 초기화, 잠금 해제
+  function handleRetry() {
+    setSubmitted(false);
+    setInput("");
+    setLocked(false);
+  }
+
+  // 정답 보기 - 잠금 유지, 이미지 공개
+  function handleShowAnswer() {
+    setShowAnswer(true);
+    setHint(2);
+    setLocked(true);
   }
 
   if (loading) return <div className="loading"><div className="loading-ball" /><p>포켓몬 불러오는 중...</p></div>;
@@ -368,7 +388,7 @@ function SilhouetteQuiz({ total, onFinish }) {
   }
 
   return (
-    <div className="quiz-wrap">
+    <div className="quiz-wrap" ref={topRef}>
       <div className="quiz-progress-bar-wrap">
         <div className="quiz-progress-bar" style={{ width: ((qNum - 1) / total * 100) + "%" }} />
       </div>
@@ -392,33 +412,39 @@ function SilhouetteQuiz({ total, onFinish }) {
           <img src={imgSrc} alt="?" className="silhouette-img" style={imgStyle} />
         </div>
 
-        {!submitted && (
+        {/* 입력칸 - 잠금 아닐 때만 활성화 */}
+        {!showAnswer && (
           <>
-            <div className="silhouette-hints">
-              {hint < 1 && (
-                <button className="pixel-btn hint-btn" onClick={function() { setHint(1); }}>힌트 보기</button>
-              )}
-              {hint === 1 && (
-                <button className="pixel-btn hint-btn" onClick={function() { setHint(2); }}>정답 공개</button>
-              )}
-            </div>
+            {!locked && (
+              <div className="silhouette-hints">
+                {hint < 1 && (
+                  <button className="pixel-btn hint-btn" onClick={function() { setHint(1); }}>힌트 보기</button>
+                )}
+                {hint === 1 && (
+                  <button className="pixel-btn hint-btn" onClick={function() { setHint(2); setLocked(true); }}>정답 공개</button>
+                )}
+              </div>
+            )}
             <div className="silhouette-input-wrap">
               <input
                 className="search-input"
                 type="text"
                 placeholder="포켓몬 이름 입력 (한글/영어)"
                 value={input}
-                onChange={function(e) { setInput(e.target.value); }}
+                onChange={function(e) { if (!locked) setInput(e.target.value); }}
                 onKeyDown={handleKeyDown}
-                style={{ marginBottom: "8px" }}
+                disabled={locked}
+                style={{ marginBottom: "8px", opacity: locked ? 0.5 : 1 }}
               />
-              <button className="pixel-btn quiz-submit-btn" onClick={handleSubmit} disabled={!input.trim()}>정답 제출</button>
+              {!locked && (
+                <button className="pixel-btn quiz-submit-btn" onClick={handleSubmit} disabled={!input.trim()}>정답 제출</button>
+              )}
             </div>
           </>
         )}
 
         {/* 힌트로 정답 공개했을 때 */}
-        {!submitted && hint === 2 && (
+        {!submitted && hint === 2 && locked && !showAnswer && (
           <div className="quiz-result">
             <p className="quiz-answer-text" style={{ marginBottom: "12px" }}>
               정답: <span style={{ color: "var(--accent)" }}>{pokemon.nameKo}</span> ({pokemon.name})
@@ -442,13 +468,13 @@ function SilhouetteQuiz({ total, onFinish }) {
           <div className="quiz-result">
             <p className="quiz-result-text result-wrong">❌ 다시 한번 도전해보세요!</p>
             <div className="retry-btns">
-              <button className="pixel-btn" onClick={function() { setSubmitted(false); setInput(""); }}>다시 도전하기</button>
-              <button className="pixel-btn" style={{ borderColor: "var(--text-muted)", color: "var(--text-muted)" }} onClick={function() { setShowAnswer(true); setHint(2); }}>정답 보기</button>
+              <button className="pixel-btn" onClick={handleRetry}>다시 도전하기</button>
+              <button className="pixel-btn" style={{ borderColor: "var(--text-muted)", color: "var(--text-muted)" }} onClick={handleShowAnswer}>정답 보기</button>
             </div>
           </div>
         )}
 
-        {submitted && !isCorrect && showAnswer && (
+        {showAnswer && (
           <div className="quiz-result">
             <p className="quiz-answer-text" style={{ marginBottom: "12px" }}>
               정답: <span style={{ color: "var(--accent)" }}>{pokemon.nameKo}</span> ({pokemon.name})

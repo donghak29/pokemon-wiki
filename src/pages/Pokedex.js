@@ -39,6 +39,43 @@ function StatBar({ name, value }) {
   );
 }
 
+function MegaAbilities({ abilities }) {
+  var [abilityInfos, setAbilityInfos] = useState([]);
+  var [loading, setLoading] = useState(true);
+
+  useEffect(function() {
+    async function load() {
+      setLoading(true);
+      var results = await Promise.all(abilities.map(async function(a) {
+        var info = await fetchAbilityKo(a.ability.name);
+        return { nameKo: info.nameKo, desc: info.desc, isHidden: a.is_hidden };
+      }));
+      setAbilityInfos(results);
+      setLoading(false);
+    }
+    load();
+  }, [abilities]);
+
+  if (loading) return <p style={{ fontSize: "11px", color: "var(--text-muted)" }}>특성 불러오는 중...</p>;
+
+  return (
+    <div className="ability-inline-list" style={{ marginBottom: "0" }}>
+      {abilityInfos.map(function(a, i) {
+        return (
+          <div key={i} className="ability-inline-item" style={{ cursor: "default" }}>
+            <div className="ability-inline-header">
+              <span className={"ability-inline-name" + (a.isHidden ? " ability-hidden" : "")}>
+                {a.nameKo}{a.isHidden ? " *" : ""}
+              </span>
+            </div>
+            {a.desc && <p className="ability-inline-desc">{a.desc.length > 60 ? a.desc.slice(0, 60) + "..." : a.desc}</p>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function MegaPanel({ baseName }) {
   var [megas, setMegas] = useState([]);
   var [loading, setLoading] = useState(true);
@@ -78,7 +115,11 @@ function MegaPanel({ baseName }) {
                 </div>
               </div>
             </div>
-            <div className="modal-stats" style={{ borderTop: "1px solid var(--border)", paddingTop: "16px" }}>
+            <div style={{ borderTop: "1px solid var(--border)", paddingTop: "16px", marginTop: "8px" }}>
+              <p className="stats-title">특성</p>
+              <MegaAbilities abilities={mega.abilities} />
+            </div>
+            <div className="modal-stats" style={{ borderTop: "1px solid var(--border)", paddingTop: "16px", marginTop: "16px" }}>
               <p className="stats-title">메가 진화 종족치</p>
               {mega.stats.map(function(s) { return <StatBar key={s.stat.name} name={s.stat.name} value={s.base_stat} />; })}
             </div>
